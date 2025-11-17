@@ -12,51 +12,109 @@
       body {
         margin: 0;
         overflow: hidden;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       }
-      #info {
+      #overlay {
         position: fixed;
-        top: 8px;
-        left: 8px;
-        padding: 6px 10px;
-        background: rgba(0, 0, 0, 0.6);
+        top: 0;
+        left: 0;
+        right: 0;
+        padding: 8px 12px;
+        background: rgba(0, 0, 0, 0.55);
         color: #fff;
         font-size: 13px;
-        border-radius: 4px;
-        max-width: 80vw;
         z-index: 10;
       }
-      #info b {
-        font-size: 14px;
+      #overlay h1 {
+        font-size: 16px;
+        margin: 0 0 4px 0;
+      }
+      #buttons {
+        margin-top: 4px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      button {
+        border: none;
+        border-radius: 4px;
+        padding: 4px 10px;
+        cursor: pointer;
+        font-size: 13px;
       }
     </style>
   </head>
 
   <body>
-    <!-- ข้อความบอกวิธีใช้ -->
-    <div id="info">
-      <b>AR Rabbit Demo</b><br />
-      TH: เล็งกล้องไปที่ Marker (ลาย HIRO) เพื่อดู "กระต่ายแว่น"<br />
-      EN: Point your camera at the HIRO marker to see the rabbit.
+    <!-- แถบคำอธิบาย + ปุ่มเล่นเสียง -->
+    <div id="overlay">
+      <h1>AR Rabbit Demo</h1>
+      <div>TH: เล็งกล้องไปที่ Marker (ลาย HIRO) เพื่อดู "กระต่ายแว่น"</div>
+      <div>EN: Point your camera at the HIRO marker to see the rabbit.</div>
+
+      <div id="buttons">
+        <button onclick="playTH()">▶ เสียงภาษาไทย</button>
+        <button onclick="playEN()">▶ Play English</button>
+        <button onclick="stopAll()">⏹ Stop</button>
+      </div>
     </div>
+
+    <!-- ไฟล์เสียง (เอามาวางไว้ root เดียวกับ index.html) -->
+    <audio id="audioTH" src="voice_th.mp3"></audio>
+    <audio id="audioEN" src="voice_en.mp3"></audio>
 
     <!-- ฉาก AR -->
     <a-scene
       embedded
       arjs="sourceType: webcam; debugUIEnabled: false;"
     >
-      <!-- ใช้ marker มาตรฐาน preset="hiro" -->
+      <!-- Marker HIRO -->
       <a-marker preset="hiro">
-        <!-- โมเดลกระต่าย -->
+        <!-- โมเดลกระต่าย + animation ขยับตัว -->
         <a-entity
+          id="rabbit"
           gltf-model="url(Easter_rabbit.glb)"
           position="0 0 0"
           rotation="0 180 0"
-          scale="6.0 6.0 6.0"
-        ></a-entity>
+          scale="2 2 2"
+          animation="property: position;
+                     dir: alternate;
+                     dur: 2000;
+                     easing: easeInOutSine;
+                     loop: true;
+                     to: 0 0.35 0"
+        >
+        </a-entity>
       </a-marker>
 
       <!-- กล้อง -->
       <a-entity camera></a-entity>
     </a-scene>
+
+    <script>
+      const audioTH = document.getElementById("audioTH");
+      const audioEN = document.getElementById("audioEN");
+
+      function stopAll() {
+        [audioTH, audioEN].forEach(a => {
+          a.pause();
+          a.currentTime = 0;
+        });
+      }
+
+      function playTH() {
+        stopAll();
+        audioTH.play().catch(err => {
+          console.log("Cannot play TH audio:", err);
+        });
+      }
+
+      function playEN() {
+        stopAll();
+        audioEN.play().catch(err => {
+          console.log("Cannot play EN audio:", err);
+        });
+      }
+    </script>
   </body>
 </html>
